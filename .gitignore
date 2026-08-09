@@ -5,3 +5,8 @@
 .vscode/ipch
 include/secrets.h
 CLAUDE.md
+# Local backups / scratch files, not meant for the repo
+backup/
+
+*.swp
+*~
