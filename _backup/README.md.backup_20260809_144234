@@ -1,0 +1,78 @@
+# esp-motion-absence-detection
+
+Privacy-first bewegingsbewaking voor mensen die alleen wonen. Eén
+PIR-sensor in de woonkamer op een ESP8266 (Wemos D1 mini) leert het
+normale bewegingspatroon per weekdag en tijdsblok, en waarschuwt de
+familie via Telegram (en optioneel Home Assistant) wanneer dat patroon
+significant afwijkt — zonder camera, geluid of identificatie.
+
+Zie [`PHILOSOPHY.md`](PHILOSOPHY.md) voor de achtergrond en
+vergelijkbare projecten, en [`CLAUDE.md`](CLAUDE.md) voor de volledige
+architectuur en alle ontwerpbeslissingen.
+
+## Wat het doet
+
+- Eén PIR-bewegingssensor registreert uitsluitend **of** er beweging
+  is — geen beeld, geen geluid, geen locatie binnen de woning.
+- Het systeem leert per weekdag en tijdsblok (6 blokken van 4 uur) wat
+  normaal is, op basis van een voortschrijdend gemiddelde over de
+  laatste 6 weken.
+- Wijkt het huidige bewegingspatroon significant af — te weinig
+  beweging in een normaal actief tijdsblok — dan gaat er een
+  Telegram-bericht naar de familie.
+- Een vlak vangnet (standaard 12 uur zonder enige beweging) vangt ook
+  de eerste weken op, voordat er genoeg geschiedenis is opgebouwd.
+- Een apart "onrust"-signaal herkent wanneer het hele dagpatroon
+  onregelmatiger wordt dan gebruikelijk — in beide richtingen (te
+  weinig, maar ook ongebruikelijk veel beweging in normaal rustige
+  uren, zoals 's nachts ronddwalen).
+- Optionele integratie met Home Assistant via MQTT Discovery.
+
+## Privacy
+
+Het systeem is bewust zo ontworpen dat het **nooit** een
+dag-voor-dag-logboek van aanwezigheid toont of verstuurt — niet in de
+webinterface, niet via MQTT. Alleen het geaggregeerde, geleerde
+patroon is zichtbaar, nooit herleidbaar naar een specifieke datum.
+
+## Installatie
+
+1. Kopieer `include/secrets.h.example` naar `include/secrets.h` en vul
+   in:
+   - je WiFi-gegevens
+   - een Telegram bot-token en chat-id (zie hieronder)
+   - je MQTT-broker-adres, als je Home Assistant gebruikt
+2. Sluit een PIR-sensor aan op **D2**, gevoed door **5V** (niet 3.3V —
+   de meeste PIR-modules hebben dat nodig om te functioneren).
+3. Open het project in VS Code met de PlatformIO-extensie. Kies de
+   juiste `default_envs` in `platformio.ini` (`d1_mini` of
+   `esp8266dev`, afhankelijk van je exacte bordje) en flash.
+4. Open het IP-adres van het board in een browser voor de Status- en
+   Logging-pagina.
+
+### Een Telegram-bot aanmaken
+
+1. Zoek in Telegram naar **BotFather**, stuur `/newbot`, volg de
+   stappen. Je krijgt een bot-token terug.
+2. Stuur een bericht naar je bot (privé, of voeg 'm toe aan een groep
+   en stuur daar een bericht).
+3. Open `https://api.telegram.org/bot<JOUW_TOKEN>/getUpdates` in een
+   browser en zoek het `chat.id`-veld — dat is je chat-id.
+4. Zet beide waarden in `secrets.h`.
+
+## Hardware
+
+- Wemos D1 mini (ESP8266EX, 4MB flash)
+- PIR-sensor (bv. HC-SR501) op D2 (GPIO4), gevoed door 5V
+
+## Status
+
+Functioneel compleet (v1): WiFi, tijd, PIR-detectie, webinterface,
+Telegram-alarm en Home Assistant/MQTT-integratie werken allemaal. De
+alarmdrempel en severity-indeling zijn nog niet in de praktijk
+gevalideerd — het systeem moet nog een aantal weken draaien om een
+zinvolle baseline op te bouwen.
+
+## Licentie
+
+Zie `LICENSE.txt`.
