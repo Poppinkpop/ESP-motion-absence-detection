@@ -1,149 +1,152 @@
 # esp-motion-absence-detection
 
-Privacy-first bewegingsbewaking voor mensen die alleen wonen. Eén
-PIR-sensor in de woonkamer op een ESP8266 (Wemos D1 mini) leert het
-normale bewegingspatroon per weekdag en tijdsblok, en waarschuwt de
-familie via Telegram wanneer dat patroon significant afwijkt — zonder
-camera, geluid, identificatie, of enige externe dataverbinding buiten
-Telegram zelf.
+Privacy-first movement monitoring for people who live alone. A single
+PIR sensor in the living room, on an ESP8266 (Wemos D1 mini), learns the
+normal movement pattern per weekday and time block, and notifies family
+via Telegram when that pattern deviates significantly — no camera, no
+audio, no identification, and no external data connection of any kind
+other than Telegram itself.
 
-Zie [`PHILOSOPHY.md`](PHILOSOPHY.md) voor de achtergrond en
-vergelijkbare projecten, en [`ALGORITHM.md`](ALGORITHM.md) voor de
-exacte rekenmethode.
+See [`PHILOSOPHY.md`](PHILOSOPHY.md) for the background and related
+projects, and [`ALGORITHM.md`](ALGORITHM.md) for the exact calculation
+method.
 
-## Wat het doet
+## What it does
 
-- Eén PIR-bewegingssensor registreert uitsluitend **of** er beweging
-  is — geen beeld, geen geluid, geen locatie binnen de woning, en geen
-  enkele externe dataverbinding behalve de Telegram-melding zelf.
-- Het systeem leert per weekdag en tijdsblok (6 blokken van 4 uur) wat
-  normaal is, op basis van een voortschrijdend gemiddelde over de
-  laatste 6 weken.
-- Wijkt het huidige bewegingspatroon significant af — te weinig
-  beweging in een normaal actief tijdsblok — dan gaat er een
-  Telegram-bericht naar de familie.
-- Een vlak vangnet vangt ook de eerste weken op, voordat er genoeg
-  geschiedenis is opgebouwd, en blijft daarna als permanente
-  achtervang actief.
-- Maximaal 3 meldingen per aaneengesloten episode (met een cooldown
-  van 3 tijdsblokken ertussen). Blijft de familie daarna niet
-  reageren, dan stopt het systeem met waarschuwen én met leren
-  (rustmodus), en laat het zich wekelijks kort horen om te bevestigen
-  dat het nog werkt.
-- Een apart "onrust"-signaal herkent wanneer het hele dagpatroon
-  onregelmatiger wordt dan gebruikelijk — in beide richtingen (te
-  weinig, maar ook ongebruikelijk veel beweging in normaal rustige
-  uren, zoals 's nachts ronddwalen).
-- Een optionele, gedimde groene LED geeft een korte visuele
-  bevestiging bij elke geregistreerde beweging.
+- A single PIR motion sensor registers only **whether** there is
+  movement — no image, no audio, no location within the home, and no
+  external data connection other than the Telegram notification itself.
+- The system learns what's normal per weekday and time block (6 blocks
+  of 4 hours each), based on a rolling average over the last 6 weeks.
+- If the current movement pattern deviates significantly — too little
+  movement during a normally active block — a Telegram message goes out
+  to the family.
+- A flat safety net also covers the first few weeks, before enough
+  history has built up, and then stays active afterwards as a permanent
+  backstop.
+- A maximum of 3 notifications per continuous episode (with a cooldown
+  of 3 time blocks in between). If the family still doesn't respond
+  after that, the system stops notifying *and* stops learning (rest
+  mode), and checks in briefly once a week to confirm it's still
+  running.
+- A separate "pattern instability" signal picks up on the whole daily
+  rhythm becoming more irregular than usual — in both directions (too
+  little movement, but also unusually much movement during normally
+  quiet hours, such as nighttime wandering).
+- An optional, dimmed green LED gives a brief visual confirmation on
+  every registered movement.
 
-Alle drempels en tijdsinstellingen hierboven zijn instelbaar via de
-**Settings**-tab van de webinterface — zie [`ALGORITHM.md`](ALGORITHM.md)
-voor de exacte rekenmethode en defaultwaarden.
+All thresholds and timing settings above are configurable via the
+**Settings** tab of the web interface — see [`ALGORITHM.md`](ALGORITHM.md)
+for the exact calculation method and default values.
 
 ## Privacy
 
-Het systeem is bewust zo ontworpen dat het **nooit** een
-dag-voor-dag-logboek van aanwezigheid toont of verstuurt, en dat er
-geen enkele data het huis verlaat behalve de Telegram-melding zelf
-(geen cloud-dashboard, geen externe integraties). Alleen het
-geaggregeerde, geleerde patroon is zichtbaar in de webinterface, nooit
-herleidbaar naar een specifieke datum.
+The system is deliberately designed to **never** display or send a
+day-by-day presence log, and no data leaves the house other than the
+Telegram notification itself (no cloud dashboard, no external
+integrations). Only the aggregated, learned pattern is visible in the
+web interface, never traceable back to a specific date.
 
-## Webinterface
+## Web interface
 
-De webinterface bestaat uit drie tabs:
+The web interface has three tabs:
 
-- **Status** — huidig tijdsblok, live tick-telling, het geleerde
-  patroon (zowel per weekdag als over alle dagen samen), actuele
-  alarm-/onrust-status, het aantal meldingen in de huidige episode
-  (0-3), en of het systeem in rustmodus staat.
-- **Settings** — gevoeligheid (Less sensitive / Normal / More
-  sensitive, standaard Normal — zie [`ALGORITHM.md`](ALGORITHM.md) voor
-  de exacte drempelwaarden per keuze), vlak-vangnet-uren, en de
-  bootstrap-fallback-uren voor de eerste weken.
-- **Log** — live PIR-events en het debug-log.
+- **Status** — current time block, live tick count, the learned pattern
+  (both per weekday and combined across all days), current alarm/
+  instability status, the number of notifications in the current episode
+  (0-3), and whether the system is in rest mode.
+- **Settings** — sensitivity (Less sensitive / Normal / More sensitive,
+  default Normal — see [`ALGORITHM.md`](ALGORITHM.md) for the exact
+  threshold values per option), flat-safety-net hours, and the
+  bootstrap-fallback hours for the first few weeks.
+- **Log** — live PIR events and the debug log.
 
-## Installatie
+## Installation
 
-1. Kopieer `include/secrets.h.example` naar `include/secrets.h` en vul
-   in:
-   - je WiFi-gegevens
-   - een Telegram bot-token en chat-id (zie hieronder)
-   - een **persoonsgegevens-veld**: een korte naam of aanduiding (bv.
-     "Vader", "mevr. van Dam", of een cliëntnummer bij een organisatie)
-     die wordt meegestuurd in elk Telegram-bericht, zodat bij meerdere
-     sensoren altijd duidelijk is om wie het gaat. **Let op:** vul hier
-     geen direct herleidbare gegevens in zoals een volledig adres — een
-     naam, relatie of cliëntnummer is voldoende en veiliger.
-2. Sluit een PIR-sensor aan (standaardpin **D2**, in `pinout.h` te
-   wijzigen), gevoed door **5V** (niet 3.3V — de meeste PIR-modules
-   hebben dat nodig om te functioneren).
-3. Sluit optioneel een gedimde groene LED aan als visuele bevestiging
-   dat het systeem beweging registreert (standaardpin **D1**, eveneens
-   in `pinout.h` te wijzigen, los van de PIR-pin) — zie
-   [Optionele LED](#optionele-led) hieronder. De LED-uitgang zit altijd
-   in de firmware; of de LED fysiek wordt ingebouwd is aan de bouwer
-   van het kastje.
-4. Open het project in VS Code met de PlatformIO-extensie. Kies de
-   juiste `default_envs` in `platformio.ini` (`d1_mini` of
-   `esp8266dev`, afhankelijk van je exacte bordje) en flash.
-5. Bij elke opstart stuurt het systeem één keer een Telegram-bericht
-   dat de sensor voor het ingevulde persoonsgegevens-veld verbonden is,
-   met het IP-adres waarop de instellingen te wijzigen zijn (alleen te
-   bereiken vanaf het eigen huisnetwerk). Deze melding telt niet mee
-   voor de meldingslimiet hieronder.
-6. Open het IP-adres van het board in een browser voor de Status-,
-   Settings- en Log-tab.
-7. Kies eventueel op de **Settings**-tab een andere gevoeligheid dan de
-   standaard "Normal", of pas de vangnet-uren aan.
+1. Copy `include/secrets.h.example` to `include/secrets.h` and fill in:
+   - your WiFi credentials
+   - a Telegram bot token and chat id (see below)
+   - a **person identifier field**: a short name or label (e.g.
+     "Father", "Mrs. Smith", or a client number for an organization)
+     that is included in every Telegram message, so that with multiple
+     sensors it's always clear who the message concerns. **Note:** do
+     not enter directly identifying information here such as a full
+     address — a name, relation, or client number is sufficient and
+     safer.
+2. Connect a PIR sensor (default pin **D2**, changeable in `pinout.h`),
+   powered by **5V** (not 3.3V — most PIR modules need that to
+   function).
+3. Optionally connect a dimmed green LED as visual confirmation that the
+   system is registering movement (default pin **D1**, also changeable
+   in `pinout.h`, independent of the PIR pin) — see
+   [Optional LED](#optional-led) below. The LED output is always present
+   in the firmware; whether the LED is actually installed physically is
+   up to whoever builds the enclosure.
+4. Open the project in VS Code with the PlatformIO extension. Choose the
+   right `default_envs` in `platformio.ini` (`d1_mini` or `esp8266dev`,
+   depending on your exact board) and flash.
+5. On every boot, the system sends one Telegram message stating that the
+   sensor for the configured person identifier is connected, along with
+   the IP address where settings can be changed (reachable only from the
+   home network). This message does not count toward the notification
+   limit described below.
+6. Open the board's IP address in a browser for the Status, Settings,
+   and Log tabs.
+7. Optionally choose a different sensitivity than the default "Normal"
+   on the **Settings** tab, or adjust the safety-net hours.
 
-### Een Telegram-bot aanmaken
+### Creating a Telegram bot
 
-1. Zoek in Telegram naar **BotFather**, stuur `/newbot`, volg de
-   stappen. Je krijgt een bot-token terug.
-2. Stuur een bericht naar je bot (privé, of voeg 'm toe aan een groep
-   en stuur daar een bericht).
-3. Open `https://api.telegram.org/bot<JOUW_TOKEN>/getUpdates` in een
-   browser en zoek het `chat.id`-veld — dat is je chat-id.
-4. Zet beide waarden in `secrets.h`.
+1. Search Telegram for **BotFather**, send `/newbot`, follow the steps.
+   You'll get a bot token back.
+2. Send a message to your bot (privately, or add it to a group and send
+   a message there).
+3. Open `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates` in a
+   browser and look for the `chat.id` field — that's your chat id.
+4. Put both values in `secrets.h`.
 
 ## Hardware
 
 - Wemos D1 mini (ESP8266EX, 4MB flash)
-- PIR-sensor (bv. HC-SR501) op standaardpin D2 (GPIO4), gevoed door 5V —
-  pin instelbaar in `pinout.h` (compile-time)
-- Optioneel: gedimde groene LED op standaardpin D1 (GPIO5), eveneens
-  instelbaar in `pinout.h`
+- PIR sensor (e.g. HC-SR501) on default pin D2 (GPIO4), powered by 5V —
+  pin configurable in `pinout.h` (compile-time)
+- Optional: dimmed green LED on default pin D1 (GPIO5), also
+  configurable in `pinout.h`
 
-### Optionele LED
+### Optional LED
 
-Een gedimde groene LED kan worden aangesloten als eenvoudige visuele
-bevestiging dat het systeem actief beweging registreert: de LED
-weerspiegelt 1-op-1 elke geregistreerde tick (niet als alarmindicator,
-en niet zichtbaar/relevant voor de bewoner tijdens afwezigheid — puur
-een "systeem leeft"-signaal voor wie er wél bij staat, bijvoorbeeld
-tijdens installatie of onderhoud). De LED-uitgang zit standaard in de
-firmware; volledig optioneel om ook echt fysiek in te bouwen.
+A dimmed green LED can be connected as a simple visual confirmation that
+the system is actively registering movement: the LED mirrors every
+registered tick 1:1 (not an alarm indicator, and not meant to be
+visible/relevant to the resident during their absence — purely a
+"system is alive" signal for whoever happens to be nearby, e.g. during
+installation or maintenance). The LED output is present in the firmware
+by default; installing it physically is entirely optional.
 
-## Een kanttekening: WiFi- en stroomuitval
+## A note on WiFi and power outages
 
-Als het board zelf offline gaat (WiFi weg, stroomuitval, crash) merkt
-dit project dat niet actief op naar de familie toe — er is dan geen
-aparte "het systeem is uitgevallen"-melding. Hetzelfde uitgangspunt
-geldt hier als overal in dit project: family first. Als de omgeving
-niet merkt dat het systeem al langere tijd stil is, is dat een signaal
-op zich.
+If the board itself goes offline (WiFi down, power outage, crash), this
+project does not actively report that to the family — there is no
+separate "the system has gone down" notification. The same principle
+applies here as everywhere else in this project: family first. If the
+surroundings don't notice that the system has been silent for a while,
+that is itself a signal.
 
 ## Status
 
-Functioneel compleet (v1): WiFi, tijd, PIR-detectie, de 3-tabs
-webinterface, Telegram-meldingen (inclusief opstartmelding, cap van 3
-met cooldown, rustmodus met wekelijkse geruststellingsmelding), en de
-status-LED werken allemaal. De alarmdrempel en severity-indeling zijn
-nog niet in de praktijk gevalideerd — het systeem moet nog een aantal
-weken draaien om een zinvolle baseline op te bouwen.
+Functionally complete (v1): WiFi, time sync, PIR detection, the 3-tab
+web interface, and Telegram notifications (including the startup
+message, the cap of 3 with cooldown, and rest mode with its weekly
+reassurance message) all work, as does the status LED. The alarm
+threshold and severity breakdown have not yet been validated in
+practice — the system still needs to run for a number of weeks to build
+up a meaningful baseline.
 
-## Licentie
+## License
 
-Zie `LICENSE.txt`.
+See `LICENSE.txt`.
+
+## Credits
+
+Design and algorithm by Poppink. Implementation by Claude (Anthropic).

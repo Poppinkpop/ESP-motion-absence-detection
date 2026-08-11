@@ -1,129 +1,122 @@
-# Filosofie
+# Philosophy
 
-> **Dit systeem is nooit een vervanging van menselijke zorg — hoogstens
-> een aanvulling.** Het observeert alleen *of* er beweging is, neemt geen
-> beslissingen, en pretendeert geen veiligheidsgarantie te zijn.
+> **This system is never a replacement for human care — at most a
+> supplement.** It only observes *whether* there is movement, makes no
+> decisions, and does not claim to be a safety guarantee.
 
-## Het probleem
+## The problem
 
-De meeste systemen voor mensen die alleen wonen — vaak ouderen — zijn
-gebaseerd op twee uitersten: cameratoezicht of een persoonlijke
-noodknop.
+Most systems for people who live alone — often the elderly — are built
+on two extremes: camera surveillance or a personal emergency button.
 
-Een camera kan veel waarnemen, maar vormt een grote inbreuk op de
-privacy. Een noodknop is privacyvriendelijk, maar werkt alleen wanneer
-de persoon zelf in staat en bereid is om hulp in te schakelen — precies
-op het moment dat dat vaak niet meer lukt.
+A camera can observe a lot, but it's a major privacy intrusion. An
+emergency button is privacy-friendly, but only works when the person is
+themselves able and willing to call for help — precisely at the moment
+that often isn't possible anymore.
 
-Dit project kiest bewust voor een eenvoudige tussenoplossing.
+This project deliberately chooses a simple middle ground.
 
-## Het uitgangspunt
+## The starting point
 
-Eén PIR-bewegingssensor in de woonkamer registreert uitsluitend **of**
-er beweging wordt waargenomen. Er wordt geen beeld gemaakt, geen
-geluid opgenomen, en er wordt niet geprobeerd te bepalen wát iemand
-aan het doen is.
+A single PIR motion sensor in the living room registers only **whether**
+movement is detected. No image is captured, no audio is recorded, and no
+attempt is made to determine *what* someone is doing.
 
-De belangrijkste informatie is juist de **afwezigheid** van beweging.
-Het systeem probeert daarom niet vast te stellen of iemand veilig is —
-het probeert vast te stellen wanneer het uitblijven van beweging
-**ongewoon wordt**, en dat aanleiding geeft om familie te waarschuwen.
+The most important piece of information is actually the **absence** of
+movement. The system therefore doesn't try to establish whether someone
+is safe — it tries to establish when the absence of movement
+**becomes unusual**, and that gives reason to alert the family.
 
-De basisregel is simpel: zodra er beweging wordt waargenomen, begint
-de beoordeling opnieuw. Het aantal bewegingen is op zichzelf niet
-belangrijk — één beweging en duizend bewegingen zijn voor het actuele
-alarmsysteem allebei voldoende om vast te stellen dat er beweging is
-geweest. De aantallen worden alleen op de achtergrond gebruikt om te
-bepalen wat op een bepaald moment normaal is.
+The basic rule is simple: as soon as movement is detected, evaluation
+starts over. The number of movements is not important in itself — one
+movement and a thousand movements are both equally sufficient for the
+current alarm system to establish that movement has occurred. The
+counts are only used in the background to determine what's normal at a
+given moment.
 
-## Zelflerend, maar eenvoudig
+## Self-learning, but simple
 
-Het systeem houdt per weekdag en tijdsblok (6 blokken van 4 uur) een
-voortschrijdend gemiddelde bij over de laatste 6 weken — een beperkte,
-lokale dataset die op de ESP zelf past, zonder externe server of
-cloud. De getallen hebben geen absolute betekenis: het maakt niet uit
-of een tijdsblok normaal 30 of 30.000 bewegingen oplevert. Het
-relevante gegeven is de verhouding tot het normale patroon van dát
-specifieke tijdsblok.
+The system keeps a rolling average per weekday and time block (6 blocks
+of 4 hours) over the last 6 weeks — a small, local dataset that fits on
+the ESP itself, without an external server or cloud. The numbers have no
+absolute meaning: it doesn't matter whether a time block normally sees
+30 or 30,000 movements. What matters is the ratio to that specific time
+block's normal pattern.
 
-De intelligentie zit niet in het herkennen van activiteiten, maar in
-het **wegen van geen beweging**. Geen beweging tijdens een periode
-waarin normaal nauwelijks beweging wordt geregistreerd (bv. 's nachts)
-hoeft weinig te betekenen. Geen beweging tijdens een periode waarin
-normaal veel beweging plaatsvindt, is veel opvallender. Daarom krijgt
-het ontbreken van beweging een andere zwaarte, afhankelijk van het
-tijdstip, de dag, en wat daar normaal gesproken gebeurt.
+The intelligence isn't in recognizing activities, but in **weighing the
+absence of movement**. No movement during a period when barely any is
+normally registered (e.g. at night) may mean little. No movement during
+a period when a lot of movement normally happens is far more notable.
+That's why the absence of movement is given a different weight depending
+on the time, the day, and what's normally expected there.
 
-Naast dit acute signaal kijkt het systeem ook naar het patroon over
-langere tijd: wordt het hele dagritme onregelmatiger dan gebruikelijk
-— in beide richtingen, dus ook ongebruikelijk veel beweging in normaal
-rustige uren — dan is dat een apart, minder urgent vroegsignaal
-("onrust in dagpatronen"), dat wordt meegestuurd met een eventueel
-acuut alarm.
+Alongside this acute signal, the system also looks at the pattern over a
+longer stretch of time: does the whole daily rhythm become more
+irregular than usual — in both directions, so also unusually much
+movement during normally quiet hours — then that's a separate,
+lower-urgency early signal ("pattern instability"), which is included
+alongside any acute alarm.
 
-Hoe dit alles precies is uitgewerkt — de rekenregels, de drempels, wat
-er gebeurt als niemand reageert — staat in `ALGORITHM.md`; de
-technische opzet in `README.md`. Dit document blijft bewust op het
-niveau van het waarom.
+Exactly how all of this is worked out — the calculation rules, the
+thresholds, what happens when nobody responds — is in `ALGORITHM.md`;
+the technical setup is in `README.md`. This document deliberately stays
+at the level of the *why*.
 
 ## Privacy by design
 
-Privacy is geen extra functie, maar een uitgangspunt. De sensor
-registreert geen beeld, geen geluid, geen identiteit, geen locatie
-binnen de woning, geen activiteitstype en geen persoonlijke inhoud —
-alleen: er is een bewegingsgebeurtenis geregistreerd. Alle verwerking
-gebeurt lokaal op de ESP. Nergens in het systeem — niet in de
-webinterface — wordt een dag-voor-dag-logboek van
-aanwezigheid getoond of verstuurd; alleen het geaggregeerde, geleerde
-patroon is zichtbaar.
+Privacy isn't an extra feature, it's a starting point. The sensor
+registers no image, no audio, no identity, no location within the home,
+no activity type, and no personal content — only: a movement event was
+registered. All processing happens locally on the ESP. Nowhere in the
+system — not in the web interface — is a day-by-day presence log shown
+or sent; only the aggregated, learned pattern is visible.
 
-## Geen perfectie als doel
+## Not aiming for perfection
 
-Het systeem kan niet vaststellen wat er daadwerkelijk aan de hand is.
-Iemand kan bijvoorbeeld langere tijd stilzitten of slapen, en een
-sensor kan een beweging missen. Het systeem pretendeert dan ook geen
-feilloze veiligheidsbewaking te zijn. Het doel is eenvoudiger: een
-systeem maken dat aanzienlijk beter is dan niets, zonder daarvoor
-voortdurend toezicht op de persoon te introduceren. Het neemt niet de
-plaats in van familie of professionele hulp — het zorgt er alleen voor
-dat een ongebruikelijke situatie eerder onder de aandacht kan komen.
+The system cannot establish what is actually going on. Someone might, for
+example, sit still or sleep for a long time, and a sensor can miss a
+movement. The system therefore does not claim to be flawless safety
+monitoring. The goal is simpler: build a system that is significantly
+better than nothing, without introducing constant surveillance of the
+person to achieve that. It does not take the place of family or
+professional care — it only helps an unusual situation come to attention
+sooner.
 
 ## KIS
 
-Het project volgt bewust het principe **Keep It Simple**. De hardware
-bestaat in essentie uit een ESP en één bewegingssensor. De software
-bestaat uit: beweging registreren → gegevens per tijdsblok bijhouden →
-normaal patroon bepalen → afwezigheid van beweging wegen → eventueel
-familie waarschuwen. Geen camera, geen complexe sensornetwerken, geen
-zware AI en geen grote database.
+The project deliberately follows the **Keep It Simple** principle. The
+hardware is, in essence, an ESP and one motion sensor. The software
+consists of: register movement → track data per time block → determine
+the normal pattern → weigh the absence of movement → notify family if
+needed. No camera, no complex sensor networks, no heavy AI, and no large
+database.
 
-De kracht van het systeem zit in de eenvoudige vraag die het probeert
-te beantwoorden:
+The strength of the system lies in the simple question it tries to
+answer:
 
-> **Wanneer is "geen beweging" ongewoon genoeg om iemand te laten
-> controleren of alles goed gaat? (familie of professionele hulp)**
+> **When is "no movement" unusual enough to have someone check that
+> everything is okay? (family or professional care)**
 
-## Vergelijkbare projecten
+## Related projects
 
 - **Automatic Alarm System for the Elderly Living Alone (Japan)** —
   [jstage.jst.go.jp](https://www.jstage.jst.go.jp/article/jami/26/1/26_1/_article/-char/en) —
-  PIR-sensoren bij alleenwonende ouderen, gebaseerd op het uitblijven
-  van beweging.
+  PIR sensors for elderly people living alone, based on the absence of
+  movement.
 - **Seoul National University — Nonresponse Interval** —
   [snu.elsevierpure.com](https://snu.elsevierpure.com/en/publications/detection-of-abnormal-living-patterns-for-elderly-living-alone-us) —
-  introduceert het *Nonresponse Interval*, waar dit project in feite een
-  sterk vereenvoudigde variant van is.
+  introduces the *Nonresponse Interval*, of which this project is
+  effectively a heavily simplified variant.
 - **Low-cost Binary Sensors (2019)** —
   [mdpi.com](https://www.mdpi.com/1424-8220/19/10/2264) /
   [PubMed](https://pubmed.ncbi.nlm.nih.gov/31100824/) —
-  laat zien dat goedkope binaire sensoren, waaronder PIR, zowel acute
-  afwijkingen als langzaam veranderende patronen kunnen signaleren.
+  shows that cheap binary sensors, including PIR, can signal both acute
+  deviations and slowly changing patterns.
 - **IBED — Inactivity-Based Emergency Detection** —
   [github.com/WilhelmSebastian/IBED](https://github.com/WilhelmSebastian/IBED) —
-  open-source project met een vergelijkbaar doel, eveneens op PIR-basis.
+  an open-source project with a similar goal, also PIR-based.
 
-Wat dit project onderscheidt is vooral de nadruk op **volledig lokale
-verwerking op goedkope consumentenhardware** (één ESP8266 + één
-PIR-sensor, geen server, geen cloud) en de expliciete, harde
-privacygrens: nergens is een herleidbaar dag-voor-dag-logboek zichtbaar
-— zelfs niet voor de gebruiker zelf.
+What sets this project apart is mainly its emphasis on **fully local
+processing on cheap consumer hardware** (one ESP8266 + one PIR sensor,
+no server, no cloud) and its explicit, hard privacy boundary: nowhere is
+a traceable day-by-day log visible — not even to the user themselves.

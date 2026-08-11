@@ -183,6 +183,20 @@ notifications from the device can fix. See also the note added to
 `PHILOSOPHY.md`: this system is a supplementary aid, not a replacement
 for family care, and does not claim to be one.
 
+**Notification wording.** Only notification 1 is a plain alarm. To keep
+the family informed about what happens next, notifications 2 and 3 each
+carry an added line about the approaching/starting rest mode:
+- **Notification 2** adds: if the next notification also finds no
+  motion, the system will enter rest mode after it.
+- **Notification 3** adds: the system is entering rest mode now — no
+  further notifications and no further baseline learning until motion
+  resumes, with a weekly reassurance message in the meantime (§5d).
+
+This wording lives in `main.cpp` (which owns exact message text; see
+`motion_tracking`'s `motion.notificationCount`, which already reflects
+the current notification number — 1, 2, or 3 — at send time), not in
+`motion_tracking` itself.
+
 **Failed sends still count.** The Telegram call is fire-and-forget
 (`WiFiClientSecure::setInsecure()`, no delivery confirmation is tracked).
 If a send attempt fails (e.g. WiFi or the Bot API is unreachable) at the
