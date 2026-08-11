@@ -15,6 +15,23 @@
 
 static String buildAlarmMessage(const String &reason) {
     String msg = reason;
+
+    // Melding 2/3 en 3/3 krijgen een aankondiging over de naderende/
+    // ingaande rustmodus (Hein, sessie van vandaag). motion.notificationCount
+    // is op het moment van versturen al opgehoogd naar het huidige
+    // meldingnummer (zie motion_tracking.cpp: fireFirstNotificationIfNeeded()
+    // / tickCooldownAndMaybeEscalate() zetten hem vóór hasPendingNotification).
+    if (motion.notificationCount == 2) {
+        msg += "\nWordt er na de volgende melding nog steeds geen beweging waargenomen, "
+               "dan gaat het systeem daarna in rustmodus: geen meldingen meer en geen "
+               "leren meer totdat er weer beweging is.";
+    } else if (motion.notificationCount == 3) {
+        msg += "\nHet systeem gaat nu in rustmodus: er worden geen meldingen meer "
+               "verstuurd en er wordt niet meer geleerd totdat er weer beweging is "
+               "waargenomen. Eén keer per week volgt een kort bericht dat het systeem "
+               "nog werkt.";
+    }
+
     if (motion.onrustActive) {
         msg += "\nDaarnaast vertoont het bewegingspatroon van de afgelopen dagen meer onrust dan gebruikelijk (minder regelmatig dan voorheen).";
     }
