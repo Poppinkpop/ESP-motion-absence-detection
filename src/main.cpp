@@ -75,10 +75,19 @@ void setup() {
 
     // Opstartmelding: precies 1x per boot, telt niet mee voor de
     // meldingscap (ALGORITHM.md §12b) — puur "ik ben verbonden".
+    // Bevat, indien van toepassing, ook eenmalig een zwak-signaal-notitie
+    // (WIFI_WEAK_RSSI_DBM, gedeeld met de log-melding in wifi_connection.cpp) —
+    // zodat een zwakke plek meteen zichtbaar is zonder dat er los in de
+    // Log-tab gekeken hoeft te worden.
     String ip = WiFi.localIP().toString();
     String startupMsg = "De sensor is aangesloten en actief. U kunt de "
         "instellingen wijzigen als u in de ruimte bent waar de sensor is "
         "geplaatst en verbonden bent met het huisnetwerk, via http://" + ip;
+    if (wifiConnected && wifiRssi() <= WIFI_WEAK_RSSI_DBM) {
+        startupMsg += "\nLet op: het WiFi-signaal is zwak (" + String(wifiRssi()) +
+                       " dBm) op deze locatie — dit kan het versturen van meldingen "
+                       "minder betrouwbaar maken.";
+    }
     telegramSendMessage(startupMsg);
 
     debugLog("Setup voltooid");

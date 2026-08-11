@@ -65,7 +65,16 @@ static void handleStatus() {
     h += "<meta http-equiv='refresh' content='10'>";
 
     h += "<p>Tijd: " + (timeAvailable ? currentTimeString() : String("nog geen NTP-sync")) + "</p>";
-    h += "<p>WiFi: " + String(wifiConnected ? "verbonden" : "NIET verbonden") + "</p>";
+
+    // WiFi-status incl. ruwe signaalsterkte (dBm) — alleen op deze tab,
+    // geen aparte melding hier; de zwak-signaal-waarschuwing zelf komt
+    // via de Log-tab en de Telegram-opstartmelding (zie wifi_connection.cpp
+    // resp. main.cpp).
+    h += "<p>WiFi: " + String(wifiConnected ? "verbonden" : "NIET verbonden");
+    if (wifiConnected) {
+        h += " (" + String(wifiRssi()) + " dBm)";
+    }
+    h += "</p>";
 
     if (motion.currentDay >= 0) {
         h += "<p>Huidige weekdag/blok: " + String(DAY_NAMES[motion.currentDay]) +

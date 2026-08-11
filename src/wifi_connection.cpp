@@ -10,6 +10,12 @@ static const unsigned long RETRY_INTERVAL_MS = 15000;
 static const unsigned long ATTEMPT_TIMEOUT_MS = 15000;
 static const int INITIAL_MAX_ATTEMPTS = 5;
 
+// Vlag: is de signaalsterkte al gelogd voor de huidige verbinding?
+// Voorkomt herhaling zolang de verbinding intact blijft; wordt
+// gereset zodra de verbinding wegvalt, zodat een volgende (her)connect
+// weer één keer gelogd wordt (KIS/ROBUUST — geen aparte timer nodig).
+static bool wifiWasWeak = false;
+
 static String buildHostname() {
     String mac = WiFi.macAddress();
     mac.replace(":", "");
@@ -78,7 +84,8 @@ static bool wifiConnectInitial() {
         WiFi.disconnect(true);
         delay(100);
         if (attemptConnect(WiFi_SSID, WiFi_password, ATTEMPT_TIMEOUT_MS)) {
-            debugLog("WiFi verbonden, IP: " + WiFi.localIP().toString());
+            debugLog("WiFi verbonden, IP: " + WiFi.localIP().toString() +
+                      ", signaal: " + String(WiFi.RSSI()) + " dBm");
             return true;
         }
         debugLog("Poging " + String(attempt) + " mislukt: " + wifiStatusText(WiFi.status()));
@@ -94,6 +101,10 @@ void wifiSetup() {
     lastAttempt = millis();
 }
 
+int wifiRssi() {
+    return (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
+}
+
 // Lichte, niet-blokkerende bewaking + herverbinden voor als de
 // verbinding later (na een succesvolle start) wegvalt. Gebruikt ook
 // een verse WiFi.begin() i.p.v. WiFi.reconnect() — zelfde reden als
@@ -107,6 +118,18 @@ void wifiLoop() {
     } else if (!nowConnected && wifiConnected) {
         wifiConnected = false;
         debugLog("WiFi verbinding verloren (" + String(wifiStatusText(WiFi.status())) + ")");
+    }
+
+    // Eenmalige log-melding van de signaalsterkte bij het (opnieuw)
+    // verbinden — in alle gevallen, niet alleen bij een zwak signaal.
+    // wifiWasWeak fungeert hier als "al gelogd voor deze verbinding"-vlag.
+    if (nowConnected && !wifiWasWeak) {
+        wifiWasWeak = true;
+        int rssi = WiFi.RSSI();
+        debugLog("WiFi-signaalsterkte: " + String(rssi) + " dBm" +
+                  (rssi <= WIFI_WEAK_RSSI_DBM ? " (zwak, drempel " + String(WIFI_WEAK_RSSI_DBM) + " dBm)" : ""));
+    } else if (!nowConnected) {
+        wifiWasWeak = false;
     }
 
     if (!nowConnected && (millis() - lastAttempt > RETRY_INTERVAL_MS)) {
