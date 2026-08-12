@@ -58,7 +58,7 @@ lower-urgency early signal ("pattern instability"), which is included
 alongside any acute alarm.
 
 Exactly how all of this is worked out — the calculation rules, the
-thresholds, what happens when nobody responds — is in `ALGORITHM.md`;
+thresholds, what happens when nobody responds — is in `DETECTION_METHOD.md`;
 the technical setup is in `README.md`. This document deliberately stays
 at the level of the *why*.
 

@@ -1,6 +1,6 @@
-# Algorithm — esp-motion-absence-detection
+# Detection method — esp-motion-absence-detection
 
-This document is the **exact** specification of the detection algorithm.
+This document is the **exact** specification of the detection method.
 For the high-level picture, see [README.md](README.md); for the
 motivation and background, see [PHILOSOPHY.md](PHILOSOPHY.md).
 
@@ -102,7 +102,7 @@ Severity is the *meaning* of the tick count, not the tick count itself.
   across the six blocks of a day.
 
 Two severity views are calculated and **both shown on the status page**,
-so the algorithm's behaviour can be inspected and compared:
+so the method's behaviour can be inspected and compared:
 
 - **(A) Per-weekday**: Monday is ranked against historical Mondays,
   Tuesday against historical Tuesdays, etc.
@@ -161,7 +161,7 @@ notifications for what is effectively the same ongoing situation.
 
 - The cooldown counts elapsed *closed timeblocks*, not wall-clock time
   directly (so it aligns with the block boundaries used everywhere else
-  in the algorithm).
+  in the method).
 - The cooldown does **not** suppress the alarm *state* itself (the
   underlying condition keeps being evaluated) — it only suppresses
   sending another notification within that window.

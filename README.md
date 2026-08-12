@@ -8,8 +8,8 @@ audio, no identification, and no external data connection of any kind
 other than Telegram itself.
 
 See [`PHILOSOPHY.md`](PHILOSOPHY.md) for the background and related
-projects, and [`ALGORITHM.md`](ALGORITHM.md) for the exact calculation
-method.
+projects, and [`DETECTION_METHOD.md`](DETECTION_METHOD.md) for the exact
+calculation method.
 
 ## What it does
 
@@ -37,8 +37,9 @@ method.
   every registered movement.
 
 All thresholds and timing settings above are configurable via the
-**Settings** tab of the web interface — see [`ALGORITHM.md`](ALGORITHM.md)
-for the exact calculation method and default values.
+**Settings** tab of the web interface — see
+[`DETECTION_METHOD.md`](DETECTION_METHOD.md) for the exact calculation
+method and default values.
 
 ## Privacy
 
@@ -57,8 +58,8 @@ The web interface has three tabs:
   instability status, the number of notifications in the current episode
   (0-3), and whether the system is in rest mode.
 - **Settings** — sensitivity (Less sensitive / Normal / More sensitive,
-  default Normal — see [`ALGORITHM.md`](ALGORITHM.md) for the exact
-  threshold values per option), flat-safety-net hours, and the
+  default Normal — see [`DETECTION_METHOD.md`](DETECTION_METHOD.md) for
+  the exact threshold values per option), flat-safety-net hours, and the
   bootstrap-fallback hours for the first few weeks.
 - **Log** — live PIR events and the debug log.
 
@@ -149,4 +150,4 @@ See `LICENSE.txt`.
 
 ## Credits
 
-Design and algorithm by Poppink. Implementation by Claude (Anthropic).
+Design and detection method by Poppink. Implementation by Claude (Anthropic).
