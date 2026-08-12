@@ -39,6 +39,16 @@ static uint32_t lastSeenIsrCount = 0;
 static volatile unsigned long lastIsrMillis = 0;
 static unsigned long ledOffAtMillis = 0;
 
+// Bewaakt of lastMovementEpoch al eenmalig is geïnitialiseerd op een
+// betrouwbare (NTP-gesynchroniseerde) tijd. Vóór NTP-sync heeft
+// time(nullptr) een zinloze waarde (vlak na 1-1-1970); zou die waarde
+// in motion.lastMovementEpoch belanden, dan springt silentSeconds in
+// motionTrackingLoop() bij de eerste geldige tijd ineens naar
+// "decennia geleden" en vuurt het vlakke vangnet meteen na boot af.
+// Daarom wordt lastMovementEpoch hier pas gezet, niet in
+// motionTrackingSetup() (die draait vóórdat NTP klaar kan zijn).
+static bool timeInitializedOnce = false;
+
 // Minimale tijd tussen twee geregistreerde bewegingen. Zonder deze
 // debounce kan elektrische ruis/snelle retriggering op de PIR-uitgang
 // honderden tellingen opleveren voor één enkele fysieke beweging
@@ -59,7 +69,9 @@ void motionTrackingSetup() {
     attachInterrupt(digitalPinToInterrupt(PIR_PIN), pirIsr, RISING);
     pinMode(STATUS_LED_PIN, OUTPUT);
     digitalWrite(STATUS_LED_PIN, LOW);
-    motion.lastMovementEpoch = time(nullptr);
+    // lastMovementEpoch wordt hier bewust NIET gezet — dat gebeurt pas
+    // in motionTrackingLoop() zodra timeAvailable voor het eerst true
+    // is (zie timeInitializedOnce hierboven).
     debugLog("motion_tracking gestart (PIR op pin " + String(PIR_PIN) +
              ", status-LED op pin " + String(STATUS_LED_PIN) + ")");
 }
@@ -369,6 +381,19 @@ void motionTrackingLoop() {
 
     if (!timeAvailable) return; // zonder tijd geen zinvolle blok-indeling
 
+    // Eenmalige initialisatie zodra de tijd voor het eerst betrouwbaar
+    // is: pas hier lastMovementEpoch zetten, niet in
+    // motionTrackingSetup() (die draait vóórdat NTP-sync klaar kan
+    // zijn). Zonder deze guard zou lastMovementEpoch op de kleine
+    // boot-tijd-waarde blijven staan, waardoor silentSeconds hieronder
+    // bij de eerste geldige tijd ineens "decennia" zou zijn en het
+    // vlakke vangnet meteen na boot afvuurt.
+    if (!timeInitializedOnce) {
+        motion.lastMovementEpoch = time(nullptr);
+        timeInitializedOnce = true;
+        debugLog("Tijd beschikbaar; laatste-beweging-tijdstip geïnitialiseerd op " + currentTimeString());
+    }
+
     // --- Nieuwe PIR-events verwerken ---
     noInterrupts();
     uint32_t isrCountNow = pirIsrCount;
@@ -468,4 +493,4 @@ String liveLogGetRecent() {
         out += String(buf) + "\n";
     }
     return out;
-}
+ }
