@@ -1,8 +1,8 @@
-# Philosophy
+> **This system is never a replacement for human or professional care —
+> at most a supplement.** It only observes *whether* there is movement,
+> makes no decisions, and does not claim to be a safety guarantee.
 
-> **This system is never a replacement for human care — at most a
-> supplement.** It only observes *whether* there is movement, makes no
-> decisions, and does not claim to be a safety guarantee.
+# Philosophy
 
 ## The problem
 
@@ -81,6 +81,16 @@ better than nothing, without introducing constant surveillance of the
 person to achieve that. It does not take the place of family or
 professional care — it only helps an unusual situation come to attention
 sooner.
+
+This is also why a simple, inexpensive, imperfect PIR sensor turned out
+to be a genuinely good technical fit rather than a compromise to live
+with. Because the system never judges an absolute tick count — only the
+ratio to that same cell's own learned history (see `DETECTION_METHOD.md`
+§4) — a sensor's fixed quirks (too sensitive, too insensitive, noisy)
+simply get absorbed into what that specific sensor, in that specific
+room, is learned to consider normal. A more expensive or more accurate
+sensor would not change the underlying logic; it would only shift the
+absolute numbers the system already treats as meaningless on their own.
 
 ## KIS
 

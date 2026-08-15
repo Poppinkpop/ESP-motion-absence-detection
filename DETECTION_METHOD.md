@@ -1,3 +1,7 @@
+> **This system is never a replacement for human or professional care —
+> at most a supplement.** It only observes *whether* there is movement,
+> makes no decisions, and does not claim to be a safety guarantee.
+
 # Detection method — esp-motion-absence-detection
 
 This document is the **exact** specification of the detection method.
@@ -10,6 +14,15 @@ conflate: **ticks**, **severity**, and **alarm**.
 ---
 
 ## 1. PIR → ticks
+
+**Ticks are counted, never judged.** A tick is a raw, unweighted event —
+it carries no meaning about whether a block is "quiet" or "busy" by
+itself. Only its rank relative to the historical average of that same
+cell (§4) determines severity, and only severity — never a raw tick
+count — feeds the alarm calculation (§5). Read that as the single most
+important sentence in this document: if you take away only one thing,
+take away that raw counts are never compared to a fixed number anywhere
+in this method, only ever to their own cell's history.
 
 Every PIR-detected motion event, after debounce, is one **tick**.
 
