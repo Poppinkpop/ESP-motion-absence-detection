@@ -1,4 +1,5 @@
 #include "debug_log.h"
+#include "time_sync.h"
 
 bool verboseLogging = false;
 
@@ -7,7 +8,12 @@ static uint8_t logHead = 0;   // volgende te overschrijven index
 static uint8_t logCount = 0;  // aantal gevulde regels (max DEBUG_LOG_LINES)
 
 static void pushLine(const String &line) {
-    String stamped = "[" + String(millis() / 1000) + "s] " + line;
+    // Kloktijd zodra NTP gesynchroniseerd is (consistent met het
+    // formaat dat liveLogGetRecent() in motion_tracking.cpp al
+    // gebruikt); vóór sync valt dit terug op uptime-seconden, zodat
+    // er nooit een zinloze tijd rond 1-1-1970 in het log verschijnt.
+    String stamp = timeAvailable ? currentTimeString() : (String(millis() / 1000) + "s");
+    String stamped = "[" + stamp + "] " + line;
     logLines[logHead] = stamped;
     logHead = (logHead + 1) % DEBUG_LOG_LINES;
     if (logCount < DEBUG_LOG_LINES) logCount++;
