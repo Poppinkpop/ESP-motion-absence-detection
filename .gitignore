@@ -5,6 +5,7 @@
 .vscode/ipch
 include/secrets.h
 CLAUDE.md
+PILOT_LOGGING.md
 # Local backups / scratch files, not meant for the repo
 backup/
 

@@ -20,18 +20,18 @@ struct AppConfig {
     // opeenvolgende afwijkende blokken moet dit overschrijden (>=).
     // Wordt in de webinterface ingesteld via 3 sensitivity-presets
     // (less sensitive=7, normal=6, more sensitive=5) — zie
-    // ALGORITHM.md §5. Dit veld blijft de enige bron van waarheid;
+    // DETECTION_METHOD.md §5. Dit veld blijft de enige bron van waarheid;
     // de presets schrijven er gewoon in.
     uint16_t alarmThreshold = 6;
     // Vlak vangnet: aantal uur zonder beweging dat sowieso een alarm
     // veroorzaakt, los van de geleerde logica. Permanente achtervang
-    // (ALGORITHM.md §8).
+    // (DETECTION_METHOD.md §8).
     uint16_t flatSafetyNetHours = 12;
     // Bootstrap-fallback: aantal uur (in blokken van
     // BLOCK_DURATION_HOURS, dus block-aligned, geen doorlopend
     // venster) zonder beweging dat een alarm veroorzaakt zolang de
     // huidige weekdag nog in de leerperiode zit (< 3 gevulde weken
-    // voor die weekdag). Zie ALGORITHM.md §7.
+    // voor die weekdag). Zie DETECTION_METHOD.md §7.
     uint16_t bootstrapFallbackHours = 16;
     // Onrust: minimum aantal afwijkende dagen in een week voordat de
     // onrust-vlag wordt gezet.

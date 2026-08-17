@@ -92,7 +92,11 @@ static void handleStatus() {
 
     h += "<div class='card'>";
     if (motion.currentDay >= 0) {
-        h += "<p>" + Lang::statusCurrentBlockLine(Lang::dayName(motion.currentDay), motion.currentBlock,
+        // Weergave-only vertaalslag: motion.currentBlock is intern 0-indexed
+        // (array-index), maar wordt hier voor de gebruiker als blok 1..6
+        // getoond — de +1 gebeurt uitsluitend hier, nooit in motion_tracking
+        // of lang.cpp, om verwarring in de rekenlogica te voorkomen.
+        h += "<p>" + Lang::statusCurrentBlockLine(Lang::dayName(motion.currentDay), motion.currentBlock + 1,
                  motion.currentBlock * BLOCK_DURATION_HOURS, (motion.currentBlock + 1) * BLOCK_DURATION_HOURS) + "</p>";
         h += "<p>" + Lang::statusLiveCountLine(motion.currentBlockCount) + "</p>";
     }

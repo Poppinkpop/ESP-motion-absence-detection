@@ -9,7 +9,7 @@ static uint8_t liveLogHead = 0;
 
 // Een blok telt als "afwijkend/stil" voor de severity-alarmsom als de
 // telling onder deze fractie van het historisch gemiddelde van die
-// cel blijft (ALGORITHM.md §5a — bewust géén strikte 0-eis).
+// cel blijft (DETECTION_METHOD.md §5a — bewust géén strikte 0-eis).
 static const float DEVIATION_RATIO_THRESHOLD = 0.3f;
 
 // Onrust: hoeveel standaarddeviaties een dagtotaal van het gemiddelde
@@ -17,17 +17,17 @@ static const float DEVIATION_RATIO_THRESHOLD = 0.3f;
 static const float ONRUST_STDDEV_FACTOR = 1.5f;
 
 // Bootstrap-fallback: aantal opeenvolgende blokken met exact 0 ticks
-// dat nodig is (ALGORITHM.md §7 — dit IS wel een strikte 0-eis, anders
-// dan §5a, want dit is de eenvoudige tijdelijke vangnetregel voor een
-// weekdag zonder genoeg geschiedenis).
+// dat nodig is (DETECTION_METHOD.md §7 — dit IS wel een strikte 0-eis,
+// anders dan §5a, want dit is de eenvoudige tijdelijke vangnetregel
+// voor een weekdag zonder genoeg geschiedenis).
 static const uint8_t BOOTSTRAP_FALLBACK_BLOCKS = 4;
 
 // Cap: maximaal aantal meldingen per episode, en cooldown-lengte
-// daartussen (ALGORITHM.md §5b).
+// daartussen (DETECTION_METHOD.md §5b).
 static const uint8_t MAX_NOTIFICATIONS_PER_EPISODE = 3;
 static const uint16_t NOTIFICATION_COOLDOWN_BLOCKS = 3;
 
-// Wekelijkse geruststellingsmelding tijdens rest mode (ALGORITHM.md §5d).
+// Wekelijkse geruststellingsmelding tijdens rest mode (DETECTION_METHOD.md §5d).
 static const time_t WEEKLY_REASSURANCE_INTERVAL_SEC = 7L * 24 * 3600;
 
 // Status-LED: hoe lang ze aanblijft per tick (puur visueel, geen
@@ -83,8 +83,8 @@ static void pushLiveEvent(time_t t) {
 }
 
 // Geeft severity 0-3 voor een blok, of de handmatige override.
-// Rangorde binnen dezelfde weekdag (ALGORITHM.md §4A) — dit is de
-// severity die de alarmsom aanstuurt.
+// Rangorde binnen dezelfde weekdag (DETECTION_METHOD.md §4, variant A)
+// — dit is de severity die de alarmsom aanstuurt.
 int severityForBlock(int day, int block) {
     CellBaseline &cell = config.cells[day][block];
     if (cell.severityOverride >= 0 && cell.severityOverride <= 3) {
@@ -110,9 +110,9 @@ int severityForBlock(int day, int block) {
 }
 
 // Severity (0-3) gerangschikt over ALLE 42 cellen samen, ongeacht
-// weekdag (ALGORITHM.md §4B) — alleen voor de diagnostische
-// naast-elkaar-weergave op de Status-tab, stuurt geen alarm aan en
-// past geen severityOverride toe.
+// weekdag (DETECTION_METHOD.md §4, variant B) — alleen voor de
+// diagnostische naast-elkaar-weergave op de Status-tab, stuurt geen
+// alarm aan en past geen severityOverride toe.
 int severityForBlockAllDays(int day, int block) {
     float target = baselineAverage(day, block);
     int rank = 0;
@@ -144,7 +144,7 @@ float baselineAverage(int day, int block) {
 
 // Zolang een weekdag nog geen 3 weken heeft waarin alle 6 blokken
 // gevuld zijn, zit die weekdag nog in de bootstrapperiode
-// (ALGORITHM.md §3/§7).
+// (DETECTION_METHOD.md §3/§7).
 static bool weekdayInBootstrap(int day) {
     uint8_t filledWeeks = 0;
     for (int w = 0; w < NUM_WEEKS; w++) {
@@ -193,7 +193,7 @@ static void dayTotalStats(int day, float &meanOut, float &stddevOut, uint8_t &co
     stddevOut = stddev;
 }
 
-// --- Meldingspoort (ALGORITHM.md §5b/§5d) --------------------------
+// --- Meldingspoort (DETECTION_METHOD.md §5b/§5d) --------------------
 //
 // Bepaalt welk type conditie op dit moment de episode zou aansturen
 // (prioriteit: blok-alarm > bootstrap-fallback > vlak vangnet). Puur
@@ -224,8 +224,8 @@ static bool fireFirstNotificationIfNeeded() {
 }
 
 // Aangeroepen bij elke bloksluiting (dus in "blokken" geteld, zoals
-// ALGORITHM.md §5b voorschrijft): telt de cooldown af, en stuurt de
-// volgende melding zodra die op nul staat — tot de cap van 3, waarna
+// DETECTION_METHOD.md §5b voorschrijft): telt de cooldown af, en stuurt
+// de volgende melding zodra die op nul staat — tot de cap van 3, waarna
 // het systeem in rest mode gaat i.p.v. een 4e melding te sturen.
 static void tickCooldownAndMaybeEscalate() {
     if (motion.restMode || motion.notificationCount == 0) return;
@@ -253,10 +253,10 @@ static void tickCooldownAndMaybeEscalate() {
 }
 
 // Sluit het huidige blok af: slaat de telling op in de round-robin
-// baseline (tenzij dit het eerste blok na een boot/rest-mode-hervatting
-// is, zie §6/§5d), beoordeelt of het blok afwijkend was, werkt de
-// alarmteller en de bootstrap-fallback-teller bij, voedt de
-// meldingspoort, en bij het laatste blok van de dag: onrustcheck.
+// baseline (tenzij dit blok wordt uitgesloten, zie hieronder),
+// beoordeelt of het blok afwijkend was, werkt de alarmteller en de
+// bootstrap-fallback-teller bij, voedt de meldingspoort, en bij het
+// laatste blok van de dag: onrustcheck.
 static void finalizeBlock(int day, int block, uint16_t count) {
     CellBaseline &cell = config.cells[day][block];
 
@@ -267,17 +267,32 @@ static void finalizeBlock(int day, int block, uint16_t count) {
 
     bool deviating = haveHistory && (count < avgBefore * DEVIATION_RATIO_THRESHOLD);
 
-    // --- Opslaan in round-robin slot — overgeslagen voor het eerste
-    // blok na een boot of na het verlaten van rest mode (ALGORITHM.md
-    // §6/§5d): zo'n blok is een deelmeting en mag de baseline niet
-    // vertekenen.
-    if (!motion.firstBlockAfterBoot) {
+    // --- Opslaan in round-robin slot — twee onafhankelijke
+    // uitsluitingsredenen (DETECTION_METHOD.md §5d/§6), allebei
+    // beoordeeld met de state zoals die STOND VÓÓR de evaluatie van dit
+    // blok hieronder (dus vóór eventuele alarm-/meldingsupdates die dit
+    // blok zelf veroorzaakt):
+    //
+    // 1. Eerste blok na een boot of na het verlaten van rest mode —
+    //    een deelmeting, mag de baseline niet vertekenen.
+    // 2. Er liep al een episode (notificationCount>0 of restMode) vóór
+    //    dit blok begon — dit blok hoort dus bij een reeds bevestigde
+    //    afwezigheidsepisode, niet bij normaal gedrag. Het blok (of de
+    //    2 blokken) dat een episode voor het eerst laat afgaan, telt
+    //    zelf nog gewoon mee: op het moment van opslaan was er nog geen
+    //    bevestigde episode om te wantrouwen. Er wordt nooit iets
+    //    achteraf teruggedraaid — de uitsluiting wordt één keer, bij
+    //    het schrijven zelf, bepaald (KIS, geen extra state nodig).
+    bool episodeAlreadyActive = (motion.notificationCount > 0) || motion.restMode;
+    if (!motion.firstBlockAfterBoot && !episodeAlreadyActive) {
         uint8_t slot = currentEpochWeek() % NUM_WEEKS;
         cell.weekCounts[slot] = count;
         cell.filled[slot] = true;
-    } else {
+    } else if (motion.firstBlockAfterBoot) {
         debugLog("Blok NIET opgeslagen voor baseline (eerste blok na boot/hervatting, mogelijk deelmeting)");
         motion.firstBlockAfterBoot = false;
+    } else {
+        debugLog("Blok NIET opgeslagen voor baseline (viel binnen een reeds lopende episode/rustmodus)");
     }
 
     debugLog("Blok afgesloten: dag=" + String(day) + " blok=" + String(block) +
@@ -285,7 +300,7 @@ static void finalizeBlock(int day, int block, uint16_t count) {
               " gem.voor=" + String(avgBefore, 1) +
               (deviating ? " -> AFWIJKEND" : ""));
 
-    // --- Alarmteller (severity-som, ALGORITHM.md §5/§5a) ---
+    // --- Alarmteller (severity-som, DETECTION_METHOD.md §5/§5a) ---
     if (deviating) {
         int sev = severityForBlock(day, block);
         motion.silentStreakSum += sev;
@@ -312,7 +327,7 @@ static void finalizeBlock(int day, int block, uint16_t count) {
         motion.blockAlarmActive = false;
     }
 
-    // --- Bootstrap-fallback (tijdelijk per weekdag, ALGORITHM.md §7) ---
+    // --- Bootstrap-fallback (tijdelijk per weekdag, DETECTION_METHOD.md §7) ---
     if (count == 0) {
         motion.consecutiveZeroBlocks++;
     } else {
@@ -409,7 +424,7 @@ void motionTrackingLoop() {
         motion.flatAlarmActive = false;
 
         // Status-LED: 1-op-1 met elke geregistreerde (gedebouncte)
-        // tick, simpelste mogelijke gedrag (ALGORITHM.md §11).
+        // tick, simpelste mogelijke gedrag (DETECTION_METHOD.md §11).
         digitalWrite(STATUS_LED_PIN, HIGH);
         ledOffAtMillis = millis() + STATUS_LED_ON_MS;
 
@@ -430,7 +445,7 @@ void motionTrackingLoop() {
                 motion.restMode = false;
                 // Zelfde regel als een reboot: het blok waarin de
                 // eerste beweging valt telt niet mee voor de baseline
-                // (ALGORITHM.md §5d, hergebruikt §6).
+                // (DETECTION_METHOD.md §5d, hergebruikt §6).
                 motion.firstBlockAfterBoot = true;
                 debugLog("Rest mode beëindigd: beweging gedetecteerd, systeem hervat");
             }
@@ -458,7 +473,7 @@ void motionTrackingLoop() {
         motion.currentBlock = block;
     }
 
-    // --- Vlak vangnet (permanent, ALGORITHM.md §8) ---
+    // --- Vlak vangnet (permanent, DETECTION_METHOD.md §8) ---
     time_t now = time(nullptr);
     uint32_t silentSeconds = (uint32_t)(now - motion.lastMovementEpoch);
     uint32_t thresholdSeconds = (uint32_t)config.flatSafetyNetHours * 3600UL;

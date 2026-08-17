@@ -70,9 +70,14 @@ For each (weekday, block) cell, the ESP keeps the tick count of the last
   - `0 ticks` — a genuine, fully-measured block with no motion.
   - *invalid / not filled* — no reliable measurement for that week yet
     (either because history hasn't reached that week, or because the
-    block was discarded per the reboot rule in §6).
+    block was excluded per §6 or §5d).
   - These are never conflated: a missing measurement is not the same as
     a zero measurement.
+  - A round-robin slot that is *skipped* this cycle (§6/§5d) simply keeps
+    whatever value — filled or not-filled — it already held from 6 weeks
+    earlier. There is no third "skipped" state; skipping a write is
+    indistinguishable, in storage, from "this cycle hasn't come around
+    yet."
 
 ---
 
@@ -262,21 +267,26 @@ system enters **rest mode** instead of sending a 4th notification.
   weaken the existing privacy boundary (§10), since a live "current
   block" count never exposed day-level history to begin with, rest mode
   or not.
-- **Baseline learning is paused.** The per-block write to the 6-week
-  rolling baseline (§2) is skipped while in rest mode, so an extended
-  absence (holiday, or worse) does not distort the learned normal
-  pattern. Ticks are still counted live, just not persisted into the
-  baseline history.
-- **No retroactive deletion.** The blocks between notification 1 and
-  notification 3 (already stored before rest mode began) are **not**
-  retroactively cleared — at the time they were written there was no
-  reason yet to distrust them. Only from the moment rest mode actually
-  begins (after notification 3) does baseline-writing stop. Any
-  resulting artificially-quiet ~24h stretch in that week's data ages out
-  naturally once that week rolls out of the 6-week history. This was
-  chosen over retroactive deletion, which would require tracking exactly
-  which blocks belong to which episode — extra state for an effect that
-  fades on its own (KIS).
+- **Baseline exclusion, decided at write time — an active episode is
+  never learned.** A block is excluded from the 6-week baseline (§2) if,
+  at the moment it closes, an episode was **already** running — i.e.
+  `notification count > 0` or rest mode was already active, evaluated
+  using the state as it stood *before* this block's own alarm evaluation
+  runs. Concretely: the block (or two blocks) whose own evaluation
+  triggers notification 1 for the very first time is still written to
+  the baseline — at the moment it closed there was no confirmed episode
+  yet to distrust it. Every block from notification 1 onward — through
+  notification 2, 3, and the whole of rest mode — is excluded. This is
+  the *same* exclusion mechanism as the reboot rule in §6 (a skipped slot
+  simply keeps its value from 6 weeks earlier, see §2), applied to a
+  second, independent trigger. **No block is ever retroactively removed**
+  from an already-stored week — the exclusion is a one-time decision made
+  at write time, using only state already available, so no extra
+  bookkeeping is needed to track which blocks belong to which episode
+  (KIS). Any short quiet stretch that turns out *not* to escalate into a
+  full episode is therefore absorbed into the baseline like any other
+  seemingly-quiet stretch, exactly as intended — only a confirmed episode
+  is excluded.
 - **Resuming from rest mode**: the block in which the first new motion
   falls is treated the same as a partial/reboot block (§6) — it is
   **not** counted as a valid baseline measurement, only the next fully
@@ -316,6 +326,12 @@ otherwise pull that cell's baseline down unfairly.
 Concretely: the **first block boundary encountered after any boot** is
 always excluded from baseline learning, regardless of how much of that
 block was actually measured.
+
+This is one of two independent exclusion rules that share the same
+underlying mechanism (a skipped round-robin write, see §2) — the other
+being the episode-based exclusion described in §5d. Either rule, on its
+own, is enough to exclude a given block; they are never combined into a
+single check with different behaviour.
 
 ---
 
@@ -480,3 +496,16 @@ board's IP address.
 - Any motion at any point resets the episode to `NORMAL` immediately,
   clearing the notification counter, cooldown, and (if applicable) rest
   mode.
+
+---
+
+## 14. Web interface block numbering (display only)
+
+Internally, a block within a day is a 0-indexed array position (0–5),
+matching `config.cells[day][block]` and every calculation in this
+document. The web interface shows this to the user as blocks **1–6**
+instead — a display-only `+1` applied where the block number is rendered
+in `webinterface.cpp`, nowhere else. No internal logic, storage index, or
+calculation anywhere in this document or the code uses 1-indexed block
+numbers; this section exists solely so a reader comparing the UI to this
+document or to the code isn't confused by the difference.

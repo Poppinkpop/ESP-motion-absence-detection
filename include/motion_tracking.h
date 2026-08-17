@@ -39,11 +39,11 @@ struct MotionState {
     uint8_t silentStreakLen = 0;
     bool blockAlarmActive = false;
 
-    // Vlak vangnet (permanent, ALGORITHM.md §8).
+    // Vlak vangnet (permanent, DETECTION_METHOD.md §8).
     time_t lastMovementEpoch = 0;
     bool flatAlarmActive = false;
 
-    // Bootstrap-fallback (tijdelijk per weekdag, ALGORITHM.md §7).
+    // Bootstrap-fallback (tijdelijk per weekdag, DETECTION_METHOD.md §7).
     uint8_t consecutiveZeroBlocks = 0;
     bool bootstrapFallbackActive = false;
 
@@ -52,13 +52,13 @@ struct MotionState {
     bool onrustActive = false;
     uint32_t runningDayTotal = 0;
 
-    // --- Meldingspoort: cap van 3, cooldown, rest mode (ALGORITHM.md §5b/§5d) ---
+    // --- Meldingspoort: cap van 3, cooldown, rest mode (DETECTION_METHOD.md §5b/§5d) ---
     uint8_t notificationCount = 0;          // 0-3, meldingen binnen de huidige episode
     uint16_t cooldownBlocksRemaining = 0;   // afgeteld per bloksluiting
     bool restMode = false;
     time_t lastWeeklyReassuranceEpoch = 0;  // voor de wekelijkse rest-mode-melding
 
-    // Reboot-/hervat-fix (ALGORITHM.md §6/§5d): het eerstvolgende af te
+    // Reboot-/hervat-fix (DETECTION_METHOD.md §6/§5d): het eerstvolgende af te
     // sluiten blok telt niet mee voor de baseline — waar bij setup()
     // altijd, en opnieuw gezet zodra rest mode wordt verlaten.
     bool firstBlockAfterBoot = true;
@@ -75,11 +75,11 @@ void motionTrackingSetup();
 void motionTrackingLoop();   // detecteert PIR-events, blok-overgangen, vangnet, LED
 
 // Automatisch bepaalde of overschreven severity (0-3) voor een blok,
-// gerangschikt binnen dezelfde weekdag (ALGORITHM.md §4A).
+// gerangschikt binnen dezelfde weekdag (DETECTION_METHOD.md §4A).
 int severityForBlock(int day, int block);
 
 // Severity (0-3) van een blok gerangschikt over ALLE dagen samen,
-// ongeacht weekdag (ALGORITHM.md §4B) — puur diagnostisch, voor
+// ongeacht weekdag (DETECTION_METHOD.md §4B) — puur diagnostisch, voor
 // naast-elkaar-weergave op de Status-tab. Past geen severityOverride
 // toe (die geldt alleen voor de per-weekday-view die het alarm stuurt).
 int severityForBlockAllDays(int day, int block);

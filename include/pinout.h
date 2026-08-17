@@ -11,7 +11,7 @@
 
 // Status-LED (nieuw): licht kort op bij elke geregistreerde tick,
 // 1-op-1 met de live telling — puur een "systeem leeft/registreert"-
-// signaal, geen alarm- of rustmodus-indicator (zie ALGORITHM.md §11).
+// signaal, geen alarm- of rustmodus-indicator (zie DETECTION_METHOD.md §11).
 // D1 = GPIO5: vrije pin, geen bootstrapping-functie, niet in gebruik
 // door PIR_PIN of D5/D6. De uitgang zit altijd in de firmware; of de
 // LED fysiek wordt ingebouwd is aan de bouwer van het kastje.

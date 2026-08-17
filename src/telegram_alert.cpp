@@ -47,7 +47,7 @@ bool telegramSendMessage(const String &text) {
     https.addHeader("Content-Type", "application/x-www-form-urlencoded");
     // Persoonsgegevens-veld staat vooraan in elk bericht, zodat bij
     // meerdere sensoren/cliënten altijd duidelijk is om wie het gaat
-    // (zie ALGORITHM.md §12a, secrets.h voor het veld zelf).
+    // (zie DETECTION_METHOD.md §12a, secrets.h voor het veld zelf).
     String fullText = String(PERSOONSGEGEVENS) + "\n" + text;
     String body = "chat_id=" + String(TELEGRAM_CHAT_ID) + "&text=" + urlEncode(fullText);
     int httpCode = https.POST(body);

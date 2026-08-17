@@ -182,6 +182,16 @@ severity breakdown have not yet been validated in practice — the system
 still needs to run for a number of weeks to build up a meaningful
 baseline.
 
+## Why is this project public?
+
+This project is deliberately open.
+
+The goal is not to build a proprietary care-monitoring system, but to make a simple and inexpensive approach available to anyone who wants to experiment with improving care for people living alone.
+
+The hardware is inexpensive, the algorithm is deliberately explainable, and the limitations are explicitly documented.
+
+If this project gives someone an idea for a better sensor, a better algorithm, a better care process, or an entirely different solution, then the project has achieved its purpose.
+
 ## License
 
 See `LICENSE.txt`.
