@@ -1,5 +1,9 @@
 #include "webinterface.h"
+#if defined(ESP8266)
 #include <ESP8266WebServer.h>
+#elif defined(ESP32)
+#include <WebServer.h>
+#endif
 #include "config.h"
 #include "motion_tracking.h"
 #include "time_sync.h"
@@ -7,8 +11,14 @@
 #include "debug_log.h"
 #include "telegram_alert.h"
 #include "lang.h"
-
+// Interval waarmee de Status- en Log-tab zichzelf automatisch
+// verversen (meta-refresh). Eén gedeelde waarde voor beide tabs.
+#define PAGE_REFRESH_SECONDS 10
+#if defined(ESP8266)
 static ESP8266WebServer server(80);
+#elif defined(ESP32)
+static WebServer server(80);
+#endif
 
 // --- Sensitivity-presets (DETECTION_METHOD.md §5) --------------------------
 // De alarmdrempel zelf (config.alarmThreshold) blijft de enige bron
@@ -70,7 +80,7 @@ static String htmlFooter() {
 
 static void handleStatus() {
     String h = htmlHeader(String("esp-motion-absence-detection — ") + Lang::tabStatus(), "status");
-    h += "<meta http-equiv='refresh' content='10'>";
+    h += "<meta http-equiv='refresh' content='" + String(PAGE_REFRESH_SECONDS) + "'>";
 
     // --- Banners bovenaan: rust-modus overstemt alles (ALGORITHM/
     // DETECTION_METHOD §5d), een lopende meldings-episode krijgt anders
@@ -251,7 +261,7 @@ static void handleSettingsSave() {
 
 static void handleLog() {
     String h = htmlHeader(String("esp-motion-absence-detection — ") + Lang::tabLog(), "log");
-    h += "<meta http-equiv='refresh' content='3'>";
+    h += "<meta http-equiv='refresh' content='" + String(PAGE_REFRESH_SECONDS) + "'>";
 
     h += "<h3>" + Lang::logLiveEventsHeading(LIVE_LOG_EVENTS) + "</h3>";
     h += "<pre>" + liveLogGetRecent() + "</pre>";

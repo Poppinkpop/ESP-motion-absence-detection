@@ -1,5 +1,9 @@
 #include "wifi_connection.h"
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 #include "secrets.h"
 #include "debug_log.h"
 
@@ -31,7 +35,9 @@ static const char *wifiStatusText(wl_status_t status) {
         case WL_CONNECTED:       return "verbonden";
         case WL_CONNECT_FAILED:  return "verbinden mislukt (waarschijnlijk verkeerd wachtwoord)";
         case WL_CONNECTION_LOST: return "verbinding verloren";
+        #if defined(ESP8266)
         case WL_WRONG_PASSWORD:  return "verkeerd wachtwoord";
+        #endif
         case WL_DISCONNECTED:    return "niet verbonden";
         default:                 return "onbekende status";
     }

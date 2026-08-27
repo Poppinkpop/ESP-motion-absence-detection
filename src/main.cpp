@@ -5,7 +5,11 @@
 // main.cpp bepaalt WAT er in het bericht staat — de daadwerkelijke
 // vertaalde tekst komt sinds deze sessie uit lang.h).
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+   #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+   #include <WiFi.h>
+#endif
 #include "debug_log.h"
 #include "config.h"
 #include "wifi_connection.h"
@@ -79,7 +83,7 @@ void setup() {
         startupMsg += "\n" + Lang::telegramWeakSignalNote(wifiRssi());
     }
     telegramSendMessage(startupMsg);
-
+  
     debugLog("Setup voltooid");
 }
 

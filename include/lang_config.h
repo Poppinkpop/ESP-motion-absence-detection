@@ -7,8 +7,8 @@
 // dat is een aparte, losstaande keuze (zie CLAUDE.md).
 #pragma once
 
-//#define LANG_EN
+#define LANG_EN
 // #define LANG_NL
 // #define LANG_DE
 // #define LANG_FR
-#define LANG_ES
+// #define LANG_ES

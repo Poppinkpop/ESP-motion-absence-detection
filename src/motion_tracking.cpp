@@ -53,7 +53,17 @@ static bool timeInitializedOnce = false;
 // debounce kan elektrische ruis/snelle retriggering op de PIR-uitgang
 // honderden tellingen opleveren voor één enkele fysieke beweging
 // (waargenomen: ~1000 tellingen bij 3x met de hand zwaaien).
+// Minimale tijd tussen twee geregistreerde bewegingen. Zonder deze
+// debounce kan elektrische ruis/snelle retriggering op de PIR-uitgang
+// honderden tellingen opleveren voor één enkele fysieke beweging
+// (waargenomen: ~1000 tellingen bij 3x met de hand zwaaien).
+//
+// BOARD-SPECIFIEK, PAS HIER AAN EN HERCOMPILEER PER APPARAAT:
+#if defined(ESP8266)
 static const unsigned long PIR_DEBOUNCE_MS = 1000;
+#elif defined(ESP32)
+static const unsigned long PIR_DEBOUNCE_MS = 1000;
+#endif
 
 // --- PIR interrupt: zo kort mogelijk, geen logging/String-werk hier ---
 static void IRAM_ATTR pirIsr() {
