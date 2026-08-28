@@ -92,6 +92,24 @@ room, is learned to consider normal. A more expensive or more accurate
 sensor would not change the underlying logic; it would only shift the
 absolute numbers the system already treats as meaningless on their own.
 
+## Guarding against alarm fatigue
+
+A system that sends too many warnings, or warnings that turn out to be
+false too often, eventually gets ignored — the family stops taking it
+seriously. This effect, often called *alarm fatigue* or the "cry wolf"
+problem, is a real and well-documented risk in hospitals and care homes,
+and it applies just as much to a home monitoring system: it is only
+useful for as long as the people receiving its messages still trust and
+act on them.
+
+This project deliberately limits how often, and how insistently, it
+speaks up: at most 3 notifications per unusual period, spaced apart by a
+cooldown, after which the system falls silent into a rest mode rather
+than keep repeating itself (see `DETECTION_METHOD.md` §5b). For the same
+reason, there is deliberately no routine "everything is fine" message —
+a system that talks constantly trains people to stop listening, which is
+exactly the opposite of what's needed the one time it truly matters.
+
 ## KIS
 
 The project deliberately follows the **Keep It Simple** principle. The

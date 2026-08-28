@@ -28,7 +28,6 @@
 
 // PIR-sensor output pin.
 // GPIO27: vrije, interrupt-geschikte pin, geen bootstrapping-functie,
-// geen input-only pin (bevestigd door Hein voor ESP-WROOM-32 DEVKIT V1).
 #define PIR_PIN GPIO_NUM_27
 
 // Status-LED — zelfde functie/aanname (actief-HOOG) als op ESP8266.

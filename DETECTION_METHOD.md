@@ -32,7 +32,13 @@ Every PIR-detected motion event, after debounce, is one **tick**.
   retriggering on the PIR output. This debounce is a deliberate design
   choice and must not be removed — it also keeps the live count on the
   Status/Logging tab readable, and prevents noise from unfairly inflating
-  one block's tick count relative to others.
+  one block's tick count relative to others. The value is set at compile
+  time (`PIR_DEBOUNCE_MS` in `motion_tracking.cpp`), separately for each
+  board (`#if defined(ESP8266)` / `#elif defined(ESP32)`), currently 1
+  second on both — this split exists so each device can be tuned and
+  reflashed independently if needed, not because the two boards actually
+  require different values.
+
 - The ESP counts ticks per 4-hour block:
 
   ```

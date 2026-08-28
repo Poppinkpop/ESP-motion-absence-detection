@@ -869,25 +869,24 @@ String telegramReasonDefault() {
 
 String telegramRestModeUpcomingNote() {
 #if defined(LANG_NL)
-    return "Wordt er na de volgende melding nog steeds geen beweging waargenomen, dan gaat het "
-           "systeem daarna in rustmodus: geen meldingen meer en geen leren meer totdat er weer "
-           "beweging is.";
+    return "Dit is de 2e van maximaal 3 meldingen. Volgt er een 3e melding, dan gaat het systeem "
+           "daarna in rustmodus: geen meldingen meer en geen leren meer totdat er weer beweging is.";
 #elif defined(LANG_EN)
-    return "If no movement is detected after the next notification either, the system will then "
-           "enter rest mode: no more notifications and no more learning until movement is detected "
-           "again.";
+    return "This is notification 2 of a maximum of 3. If a 3rd notification follows, the system will "
+           "then enter rest mode: no more notifications and no more learning until movement is "
+           "detected again.";
 #elif defined(LANG_DE)
-    return "Wird auch nach der nächsten Benachrichtigung keine Bewegung erkannt, geht das System "
-           "danach in den Ruhemodus: keine weiteren Benachrichtigungen und kein weiteres Lernen, bis "
-           "wieder Bewegung erkannt wird.";
+    return "Dies ist die 2. von maximal 3 Benachrichtigungen. Folgt eine 3. Benachrichtigung, geht das "
+           "System danach in den Ruhemodus: keine weiteren Benachrichtigungen und kein weiteres "
+           "Lernen, bis wieder Bewegung erkannt wird.";
 #elif defined(LANG_FR)
-    return "Si aucun mouvement n'est détecté après la prochaine notification non plus, le système "
+    return "Ceci est la 2e notification sur un maximum de 3. Si une 3e notification suit, le système "
            "passera alors en mode repos : plus de notifications et plus d'apprentissage jusqu'à ce "
            "qu'un mouvement soit à nouveau détecté.";
 #elif defined(LANG_ES)
-    return "Si tampoco se detecta movimiento después de la próxima notificación, el sistema entrará "
-           "en modo de reposo: no habrá más notificaciones ni aprendizaje hasta que se detecte "
-           "movimiento de nuevo.";
+    return "Esta es la notificación 2 de un máximo de 3. Si sigue una 3ª notificación, el sistema "
+           "entrará entonces en modo de reposo: no habrá más notificaciones ni aprendizaje hasta que "
+           "se detecte movimiento de nuevo.";
 #endif
 }
 

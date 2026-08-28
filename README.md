@@ -1,7 +1,7 @@
 # esp-motion-absence-detection
 
 Privacy-first movement monitoring for people who live alone. A single
-PIR sensor in the living room, on an ESP8266 (Wemos D1 mini), learns the
+PIR sensor in the living room, on an ESP8266 or ESP32, learns the
 normal movement pattern per weekday and time block, and notifies family
 via Telegram when that pattern deviates significantly — no camera, no
 audio, no identification, and no external data connection of any kind
@@ -39,7 +39,9 @@ every registered movement.
 All thresholds and timing settings above are configurable via the
 **Settings** tab of the web interface — see
 [`DETECTION_METHOD.md`](DETECTION_METHOD.md) for the exact calculation
-method and default values.
+method and default values. New installations should generally leave
+these at their defaults at first; adjust only after observing how the
+system behaves for a while.
 
 ## Privacy
 
@@ -119,9 +121,12 @@ in `pinout.h`, independent of the PIR pin) — see
 [Optional LED](#optional-led) below. The LED output is always present
 in the firmware; whether the LED is actually installed physically is
 up to whoever builds the enclosure.
-5. Open the project in VS Code with the PlatformIO extension. Choose the
-right `default_envs` in `platformio.ini` (`d1_mini` or `esp8266dev`,
-depending on your exact board) and flash.
+5. Open the project in VS Code with the PlatformIO extension. Both an
+ESP8266 and an ESP32 build live in the same codebase, selected via
+`platformio.ini` environments: `d1_mini` or `esp8266dev` for the
+ESP8266 (Wemos D1 mini), or `esp32dev` for the ESP32 (e.g. an
+ESP-WROOM-32 DEVKIT). Set `default_envs` to match your board and
+flash.
 6. On every boot, the system sends one Telegram message stating that the
 sensor for the configured person identifier is connected, along with
 the IP address where settings can be changed (reachable only from the
@@ -133,6 +138,17 @@ and Log tabs.
 on the **Settings** tab, or adjust the safety-net hours. A "send test
 message" button on the same tab lets you verify the Telegram
 connection at any time.
+
+## Resident manual
+
+A short, separate one-page manual — meant for the resident (and any
+visitor), not the installer — is available as a PDF in five languages
+under [`docs/manual/`](docs/manual/): `GEBRUIKSAANWIJZING_NL.pdf`,
+`MANUAL_EN.pdf`, `ANLEITUNG_DE.pdf`, `MANUEL_FR.pdf`, `MANUAL_ES.pdf`.
+It explains, in plain language, what the light means, that family is
+notified after a long silence, that privacy is preserved, and that
+unplugging the device is always the resident's own choice. Printing and
+laminating it is optional, left to whoever installs the device.
 
 ### Creating a Telegram bot
 
@@ -146,11 +162,20 @@ browser and look for the `chat.id` field — that's your chat id.
 
 ## Hardware
 
-- Wemos D1 mini (ESP8266EX, 4MB flash)
-- PIR sensor (e.g. HC-SR501) on default pin D2 (GPIO4), powered by 5V —
-pin configurable in `pinout.h` (compile-time)
-- Optional: dimmed green LED on default pin D1 (GPIO5), also
-configurable in `pinout.h`
+Either an ESP8266 or an ESP32 board works — pick one, both are
+supported from the same codebase (see [Installation](#installation)
+above for how to select the build).
+
+- **ESP8266**: Wemos D1 mini (ESP8266EX, 4MB flash). PIR sensor (e.g.
+HC-SR501) on default pin D2 (GPIO4), powered by 5V — pin configurable
+in `pinout.h`. Optional dimmed green LED on default pin D1 (GPIO5),
+also configurable.
+- **ESP32**: e.g. an ESP-WROOM-32 DEVKIT. PIR sensor on default pin
+GPIO27, powered by 5V — pin configurable in `pinout.h`. Optional
+dimmed green LED on default pin GPIO26, also configurable.
+
+In both cases, the PIR sensor's signal output is 3.3V logic and safe to
+connect directly to the board's GPIO pins.
 
 ### Optional LED
 
