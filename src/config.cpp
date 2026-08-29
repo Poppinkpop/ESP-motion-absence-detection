@@ -31,7 +31,7 @@ bool configSetup() {
         return configSave();
     }
     config.alarmThreshold = doc["alarmThreshold"] | 6;
-    config.flatSafetyNetHours = doc["flatSafetyNetHours"] | 12;
+    config.flatSafetyNetHours = doc["flatSafetyNetHours"] | 16;
     config.bootstrapFallbackHours = doc["bootstrapFallbackHours"] | 16;
     config.onrustMinDeviatingDays = doc["onrustMinDeviatingDays"] | 3;
     strlcpy(config.timezone, doc["timezone"] | "CET-1CEST,M3.5.0,M10.5.0/3", sizeof(config.timezone));

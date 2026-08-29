@@ -568,15 +568,15 @@ const char* settingsFlatSafetyNetLabel() {
 
 const char* settingsFlatSafetyNetHint() {
 #if defined(LANG_NL)
-    return "Standaard 12. Geldt altijd, ook na de leerperiode.";
+    return "Standaard 16. Geldt altijd, ook na de leerperiode.";
 #elif defined(LANG_EN)
-    return "Default 12. Always applies, even after the learning period.";
+    return "Default 16. Always applies, even after the learning period.";
 #elif defined(LANG_DE)
-    return "Standard 12. Gilt immer, auch nach der Lernphase.";
+    return "Standard 16. Gilt immer, auch nach der Lernphase.";
 #elif defined(LANG_FR)
-    return "Par défaut 12. S'applique toujours, même après la période d'apprentissage.";
+    return "Par défaut 16. S'applique toujours, même après la période d'apprentissage.";
 #elif defined(LANG_ES)
-    return "Predeterminado 12. Siempre se aplica, incluso después del periodo de aprendizaje.";
+    return "Predeterminado 16. Siempre se aplica, incluso después del periodo de aprendizaje.";
 #endif
 }
 

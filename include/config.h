@@ -26,7 +26,7 @@ struct AppConfig {
     // Vlak vangnet: aantal uur zonder beweging dat sowieso een alarm
     // veroorzaakt, los van de geleerde logica. Permanente achtervang
     // (DETECTION_METHOD.md §8).
-    uint16_t flatSafetyNetHours = 12;
+    uint16_t flatSafetyNetHours = 16;
     // Bootstrap-fallback: aantal uur (in blokken van
     // BLOCK_DURATION_HOURS, dus block-aligned, geen doorlopend
     // venster) zonder beweging dat een alarm veroorzaakt zolang de

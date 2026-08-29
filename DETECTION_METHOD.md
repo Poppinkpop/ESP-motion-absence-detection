@@ -355,6 +355,7 @@ This rule is block-aligned (16 hours, on block boundaries), not a rolling
 window. It stops applying to a given weekday once that weekday has 3
 valid measurements and a severity profile takes over — but the permanent
 flat safety net below keeps running regardless, for every weekday, always.
+This threshold is **configurable on the status page** (not hardcoded).
 
 ---
 
@@ -363,7 +364,7 @@ flat safety net below keeps running regardless, for every weekday, always.
 Independent of the learned severity model, and independent of the
 bootstrap fallback above:
 
-> **12 hours of continuous, uninterrupted absence of motion →
+> **16 hours of continuous, uninterrupted absence of motion →
 > notification**, regardless of weekday/bootstrap status.
 
 This threshold is **configurable on the status page** (not hardcoded).
